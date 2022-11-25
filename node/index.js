@@ -11,27 +11,26 @@ const config = {
 };
 const connection = mysql.createConnection(config)
 
-app.get('/insert', (req, res) => {
-    const sql = `INSERT INTO people(name) values ('Álvaro'), ('João'), ('Maria')`
-    connection.query(sql)
-    connection.end()
-    res.send('<h1>Nomes inseridos.</h1>')
-})
-
 app.get('/', (req, res) => {
-    connection.query("SELECT * FROM people", function (err, result, fields) {
-        if (err) throw err;
-        let listHTML = '<ul> ';
+    const createTable = `CREATE TABLE if not exists people (id int not null auto_increment, name VARCHAR(255), primary key (id))`;
+    connection.query(createTable, () => {
+        const insertNames = `INSERT INTO people(name) values ('Álvaro'), ('João'), ('Maria')`;
+        connection.query(insertNames, () => {
+            connection.query("SELECT * FROM people", function (err, result, fields) {
+                if (err) throw err;
+                let listHTML = '<ul> ';
 
-        result.forEach(people => {
-            listHTML += `<li>${people.name}</li>`;
+                result.forEach(people => {
+                    listHTML += `<li>${people.name}</li>`;
+                });
+
+                listHTML += `</ul>`;
+
+                res.send(`<h1>Full Cycle Rocks!</h1>
+        ${listHTML}
+        `)
+            });
         });
-
-        listHTML += `</ul>`;
-
-        res.send(`<h1>Full Cycle Rocks!</h1>
-    ${listHTML}
-    `)
     });
 })
 
